@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Paiement Ethereum Inscription partie de poker</title>
+</head>
+<body>
+  <h1>Paiement Ethereum Inscription partie de poker</h1>
+
+  </form>
+  <button class='button white' id='connect-button'>1. Connectez vous à Metamask</button>
+  <br><button class='button white' id='send-button'>2. Inscription:0.00986052 ETH </button>
+  <br>
+  <button id="confirmation-button" style="display: none;">
+    <a id="confirmation-link" href="#">Transaction confirmée, cliquez ici pour continuer</a>
+  </button>
+     
+  
+  <script>
+      let eth_eur_fx = 1115.56;
+      let price_eur = 0;
+         let account;
+       let amount = '0x'+(price_eur/eth_eur_fx*10**18).toString(16);
+       console.log('amount:'+amount);
+        document.getElementById('connect-button').addEventListener('click', event => {
+          let button = event.target;
+          ethereum.request({method: 'eth_requestAccounts'}).then(accounts => {
+            account = accounts[0];
+            console.log(account);
+            button.textContent = account;            ethereum.request({method: 'eth_getBalance' , params: [account, 'latest']}).then(result => {
+              console.log('balance: '+ result);
+              let wei = parseInt(result,16);
+              console.log('wei: ' + wei);
+              let balance = wei / (10**18);
+              console.log(balance + ' ETH');
+            });
+          });
+        });
+      
+          document.getElementById('send-button').addEventListener('click', event =>{
+            let transactionParam = {
+              to: '0x5f91E48E55E6c81D42B5FdD585725f1337264524',
+              from: account,
+              value: amount
+            };
+            
+            ethereum.request({method: 'eth_sendTransaction', params:[transactionParam]}).then(txhash => {
+              console.log(txhash);
+              checkTransactionconfirmation(txhash).then(r => {
+                if (r === 'confirmed') {
+                  // Affichez le bouton avec le lien une fois que la transaction est confirmée
+                  document.getElementById('confirmation-button').style.display = 'block';
+                  document.getElementById('confirmation-link').href = 'https://www.example.com';
+                }
+              });
+            });
+              
+          });
+  
+       function checkTransactionconfirmation(txhash) {
+          let checkTransactionLoop = () => {
+            return ethereum.request({method:'eth_getTransactionReceipt',params:[txhash]}).then(r => {
+              if(r !=null) return 'confirmed';
+              else return checkTransactionLoop();
+            });
+          };
+          return checkTransactionLoop();
+        }
+        
+      </script> 
+</body>
+</html>
